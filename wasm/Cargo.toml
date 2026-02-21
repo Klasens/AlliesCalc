@@ -14,7 +14,7 @@ default = ["console_error_panic_hook"]
 calc = { path = "../calc", version = "0.1.0", features = ["serde1"] }
 aa1942_2e = { path = "../aa1942_2e", version = "0.1.0", features = ["serde1"] }
 
-wasm-bindgen = { version = "0.2.63", features = ["serde-serialize"] }
+wasm-bindgen = { version = "0.2.88", features = ["serde-serialize"] }
 serde = { version = "1.0", features = ["derive", "rc"] }
 
 console_error_panic_hook = { version = "0.1.6", optional = true }

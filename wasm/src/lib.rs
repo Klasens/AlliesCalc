@@ -229,8 +229,37 @@ impl Battle {
             defender_ipc_lost: summary.defender.ipc_lost.mean,
             attacker_ipc_stddev: summary.attacker.ipc.std_dev(),
             defender_ipc_stddev: summary.defender.ipc.std_dev(),
+            attacker_unit_count_lost: summary.attacker.unit_count_lost.mean,
+            defender_unit_count_lost: summary.defender.unit_count_lost.mean,
+            attacker_unit_count_lost_stddev: summary.attacker.unit_count_lost.std_dev(),
+            defender_unit_count_lost_stddev: summary.defender.unit_count_lost.std_dev(),
             pruned_p: summary.pruned_p.into(),
         }
+    }
+
+    #[wasm_bindgen(js_name = firstRoundStats)]
+    pub fn first_round_stats(&self) -> Option<FirstRoundStats> {
+        let summary = self.summarizer.clone().summarize();
+
+        // Get first round if it exists
+        if summary.round_summaries.is_empty() {
+            return None;
+        }
+
+        let prebattle = &summary.prebattle;
+        let first_round = &summary.round_summaries[0];
+
+        // Calculate delta (losses) from prebattle to first round
+        Some(FirstRoundStats {
+            attacker_ipc_lost: prebattle.attacker.ipc.mean - first_round.attacker.ipc.mean,
+            defender_ipc_lost: prebattle.defender.ipc.mean - first_round.defender.ipc.mean,
+            attacker_unit_count_lost: prebattle.attacker.unit_count.mean - first_round.attacker.unit_count.mean,
+            defender_unit_count_lost: prebattle.defender.unit_count.mean - first_round.defender.unit_count.mean,
+            attacker_ipc_lost_stddev: (prebattle.attacker.ipc.variance + first_round.attacker.ipc.variance),
+            defender_ipc_lost_stddev: (prebattle.defender.ipc.variance + first_round.defender.ipc.variance),
+            attacker_unit_count_lost_stddev: (prebattle.attacker.unit_count.variance + first_round.attacker.unit_count.variance),
+            defender_unit_count_lost_stddev: (prebattle.defender.unit_count.variance + first_round.defender.unit_count.variance),
+        })
     }
 
     pub fn advance_round(&mut self) {
@@ -311,6 +340,10 @@ pub struct CumulativeStats {
     defender_ipc_lost: f64,
     attacker_ipc_stddev: f64,
     defender_ipc_stddev: f64,
+    attacker_unit_count_lost: f64,
+    defender_unit_count_lost: f64,
+    attacker_unit_count_lost_stddev: f64,
+    defender_unit_count_lost_stddev: f64,
 }
 
 #[wasm_bindgen]
@@ -353,5 +386,81 @@ impl CumulativeStats {
     #[wasm_bindgen(getter = defenderIpcStdDev)]
     pub fn defender_ipc_stddev(&self) -> f64 {
         self.defender_ipc_stddev.sqrt()
+    }
+
+    #[wasm_bindgen(getter = attackerUnitCountLost)]
+    pub fn attacker_unit_count_lost(&self) -> f64 {
+        self.attacker_unit_count_lost
+    }
+
+    #[wasm_bindgen(getter = defenderUnitCountLost)]
+    pub fn defender_unit_count_lost(&self) -> f64 {
+        self.defender_unit_count_lost
+    }
+
+    #[wasm_bindgen(getter = attackerUnitCountLostStdDev)]
+    pub fn attacker_unit_count_lost_stddev(&self) -> f64 {
+        self.attacker_unit_count_lost_stddev.sqrt()
+    }
+
+    #[wasm_bindgen(getter = defenderUnitCountLostStdDev)]
+    pub fn defender_unit_count_lost_stddev(&self) -> f64 {
+        self.defender_unit_count_lost_stddev.sqrt()
+    }
+}
+
+/// Statistics for the first round of combat showing the expected casualties
+#[wasm_bindgen]
+pub struct FirstRoundStats {
+    attacker_ipc_lost: f64,
+    defender_ipc_lost: f64,
+    attacker_unit_count_lost: f64,
+    defender_unit_count_lost: f64,
+    attacker_ipc_lost_stddev: f64,
+    defender_ipc_lost_stddev: f64,
+    attacker_unit_count_lost_stddev: f64,
+    defender_unit_count_lost_stddev: f64,
+}
+
+#[wasm_bindgen]
+impl FirstRoundStats {
+    #[wasm_bindgen(getter = attackerIpcLost)]
+    pub fn attacker_ipc_lost(&self) -> f64 {
+        self.attacker_ipc_lost
+    }
+
+    #[wasm_bindgen(getter = defenderIpcLost)]
+    pub fn defender_ipc_lost(&self) -> f64 {
+        self.defender_ipc_lost
+    }
+
+    #[wasm_bindgen(getter = attackerUnitCountLost)]
+    pub fn attacker_unit_count_lost(&self) -> f64 {
+        self.attacker_unit_count_lost
+    }
+
+    #[wasm_bindgen(getter = defenderUnitCountLost)]
+    pub fn defender_unit_count_lost(&self) -> f64 {
+        self.defender_unit_count_lost
+    }
+
+    #[wasm_bindgen(getter = attackerIpcLostStdDev)]
+    pub fn attacker_ipc_lost_stddev(&self) -> f64 {
+        self.attacker_ipc_lost_stddev.sqrt()
+    }
+
+    #[wasm_bindgen(getter = defenderIpcLostStdDev)]
+    pub fn defender_ipc_lost_stddev(&self) -> f64 {
+        self.defender_ipc_lost_stddev.sqrt()
+    }
+
+    #[wasm_bindgen(getter = attackerUnitCountLostStdDev)]
+    pub fn attacker_unit_count_lost_stddev(&self) -> f64 {
+        self.attacker_unit_count_lost_stddev.sqrt()
+    }
+
+    #[wasm_bindgen(getter = defenderUnitCountLostStdDev)]
+    pub fn defender_unit_count_lost_stddev(&self) -> f64 {
+        self.defender_unit_count_lost_stddev.sqrt()
     }
 }
